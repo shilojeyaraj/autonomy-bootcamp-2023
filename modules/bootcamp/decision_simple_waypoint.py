@@ -59,9 +59,7 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
 
         if dist > self.acceptance_radius:
             if report.status.name == "HALTED":
-                command = commands.Command.create_set_relative_destination_command(
-                    dx, dy
-                )
+                command = commands.Command.create_set_relative_destination_command(dx, dy)
         else:
             if report.status.name == "HALTED":
                 command = commands.Command.create_land_command()

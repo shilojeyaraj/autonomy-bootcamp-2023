@@ -46,7 +46,9 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
         # ============
 
     def run(
-        self, report: drone_report.DroneReport, landing_pad_locations: "list[location.Location]"
+        self,
+        report: drone_report.DroneReport,
+        landing_pad_locations: "list[location.Location]",
     ) -> commands.Command:
         """
         Make the drone fly to the waypoint and then land at the nearest landing pad.
@@ -92,7 +94,9 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
             else:
                 # Need to move toward waypoint; only valid when HALTED
                 if status == "HALTED":
-                    return commands.Command.create_set_relative_destination_command((dx, dy))
+                    return commands.Command.create_set_relative_destination_command(
+                        relative_x=dx, relative_y=dy
+                    )
                 # If already moving, do nothing this tick
 
         # ---- Phase 2: go to nearest landing pad, then land ----
@@ -121,10 +125,12 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
                 if status == "HALTED":
                     return commands.Command.create_land_command()
                 return commands.Command.create_halt_command()
-            else:
-                # Need to move toward pad; only valid when HALTED
-                if status == "HALTED":
-                    return commands.Command.create_set_relative_destination_command((pdx, pdy))
+
+            # Need to move toward pad; only valid when HALTED
+            if status == "HALTED":
+                return commands.Command.create_set_relative_destination_command(
+                    relative_x=pdx, relative_y=pdy
+                )
 
         # Default: advance sim with no change
         return command

@@ -80,7 +80,7 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
         if self.phase == "to_wp":
             dx = self.waypoint.x - pos.x
             dy = self.waypoint.y - pos.y
-            dist = (dx*dx + dy*dy) ** 0.5
+            dist = (dx * dx + dy * dy) ** 0.5
 
             if dist <= self.acceptance_radius:
                 # We're within radius of the waypoint:
@@ -102,7 +102,7 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
                 # choose argmin distance
                 self.pad_target = min(
                     landing_pad_locations,
-                    key=lambda p: (p.x - pos.x) * (p.x - pos.x) + (p.y - pos.y) * (p.y - pos.y)
+                    key=lambda p: (p.x - pos.x) * (p.x - pos.x) + (p.y - pos.y) * (p.y - pos.y),
                 )
 
             # If no pads detected yet, just hold (null or halt if moving)
@@ -114,9 +114,9 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
             # Move toward chosen pad
             pdx = self.pad_target.x - pos.x
             pdy = self.pad_target.y - pos.y
-            pdist_squared = (pdx*pdx + pdy*pdy) 
+            pdist_squared = pdx * pdx + pdy * pdy
 
-            if pdist_squared <= self.acceptance_radius ** 2:
+            if pdist_squared <= self.acceptance_radius**2:
                 # Inside landing radius: HALT if moving; LAND if halted
                 if status == "HALTED":
                     return commands.Command.create_land_command()
@@ -132,5 +132,3 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
         # ============
         # ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑
         # ============
-
-      

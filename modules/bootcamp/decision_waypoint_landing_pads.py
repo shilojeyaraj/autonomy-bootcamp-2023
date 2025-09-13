@@ -39,6 +39,8 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
 
         # Add your own
         self.has_landed = False
+        self.phase = "to_wp"  # "to_wp" or "to_pad"
+        self.pad_target = None
         # ============
         # ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑
         # ============
@@ -67,28 +69,68 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
         # ============
         # ↓ BOOTCAMPERS MODIFY BELOW THIS COMMENT ↓
         # ============
-        dx = self.waypoint.location_x - report.position.location_x
-        dy = self.waypoint.location_y - report.position.location_y
-        dist = (dx**2 + dy**2) ** 0.5
+        status = report.status.name  # "HALTED" | "MOVING" | "LANDED"
+        pos = report.position
 
-        if self.has_landed:
+        # If the sim already says we're landed, just noop
+        if status == "LANDED":
             return command
 
-        # Do something based on the report and the state of this class...
-        if report.status.name == "LANDED":
-            self.has_landed = True
-            return command
+        # ---- Phase 1: go to waypoint ----
+        if self.phase == "to_wp":
+            dx = self.waypoint.x - pos.x
+            dy = self.waypoint.y - pos.y
+            dist = (dx*dx + dy*dy) ** 0.5
 
-        if dist > self.acceptance_radius:
-            if report.status.name == "HALTED":
-                command = commands.Command.create_set_relative_destination_command(dx, dy)
-        else:
-            if report.status.name == "HALTED":
-                command = commands.Command.create_land_command()
-        # Do something based on the report and the state of this class...
+            if dist <= self.acceptance_radius:
+                # We're within radius of the waypoint:
+                # If moving, HALT first; if halted, switch to pad-seeking
+                if status == "HALTED":
+                    self.phase = "to_pad"
+                else:
+                    return commands.Command.create_halt_command()
+            else:
+                # Need to move toward waypoint; only valid when HALTED
+                if status == "HALTED":
+                    return commands.Command.create_set_relative_destination_command((dx, dy))
+                # If already moving, do nothing this tick
+
+        # ---- Phase 2: go to nearest landing pad, then land ----
+        if self.phase == "to_pad":
+            # Pick nearest pad once (or re-pick if list changes/was empty)
+            if (self.pad_target is None) and landing_pad_locations:
+                # choose argmin distance
+                self.pad_target = min(
+                    landing_pad_locations,
+                    key=lambda p: (p.x - pos.x) * (p.x - pos.x) + (p.y - pos.y) * (p.y - pos.y)
+                )
+
+            # If no pads detected yet, just hold (null or halt if moving)
+            if self.pad_target is None:
+                if status != "HALTED":
+                    return commands.Command.create_halt_command()
+                return command  # wait for detections
+
+            # Move toward chosen pad
+            pdx = self.pad_target.x - pos.x
+            pdy = self.pad_target.y - pos.y
+            pdist_squared = (pdx*pdx + pdy*pdy) 
+
+            if pdist_squared <= self.acceptance_radius ** 2:
+                # Inside landing radius: HALT if moving; LAND if halted
+                if status == "HALTED":
+                    return commands.Command.create_land_command()
+                return commands.Command.create_halt_command()
+            else:
+                # Need to move toward pad; only valid when HALTED
+                if status == "HALTED":
+                    return commands.Command.create_set_relative_destination_command((pdx, pdy))
+
+        # Default: advance sim with no change
+        return command
 
         # ============
         # ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑
         # ============
 
-        return command
+      

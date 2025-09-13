@@ -1,8 +1,7 @@
-"""Decision logic to fly the drone to a waypoint and land when within the acceptance radius."""
 
 from .. import commands
 from .. import drone_report
-
+from .. import drone_status
 from .. import location
 from ..private.decision import base_decision
 
@@ -16,6 +15,8 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
         """
         Initialize all persistent variables here with self.
         """
+        self.waypoint = waypoint
+        self.acceptance_radius = acceptance_radius
 
         # ============
         # ↓ BOOTCAMPERS MODIFY BELOW THIS COMMENT ↓
@@ -35,16 +36,10 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
         """
         # Default command advances the simulator without changing state
         command = commands.Command.create_null_command()
-        # Already ended?
 
         # ============
         # ↓ BOOTCAMPERS MODIFY BELOW THIS COMMENT ↓
         # ============
-        # Calculate distance to waypoint
-        dx = self.waypoint.location_x - report.position.location_x
-        dy = self.waypoint.location_y - report.position.location_y
-        dist = (dx**2 + dy**2) ** 0.5
-
         if self.has_landed:
             return command
 
@@ -52,6 +47,11 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
         if report.status.name == "LANDED":
             self.has_landed = True
             return command
+
+        # Calculate distance to waypoint
+        dx = self.waypoint.x - report.position.x
+        dy = self.waypoint.y - report.position.y
+        dist = (dx**2 + dy**2) ** 0.5
 
         if dist > self.acceptance_radius:
             if report.status.name == "HALTED":

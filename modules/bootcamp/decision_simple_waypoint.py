@@ -1,6 +1,9 @@
+"""
+Simple waypoint decision module for drone navigation.
+"""
+
 from .. import commands
 from .. import drone_report
-from .. import drone_status
 from .. import location
 from ..private.decision import base_decision
 
@@ -28,7 +31,9 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
     # ---- helpers ----
 
     def run(
-        self, report: drone_report.DroneReport, landing_pad_locations: "list[location.Location]"
+        self,
+        report: drone_report.DroneReport,
+        landing_pad_locations: "list[location.Location]",
     ) -> commands.Command:
         """
         Make the drone fly to the waypoint.
@@ -54,7 +59,9 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
 
         if dist > self.acceptance_radius:
             if report.status.name == "HALTED":
-                command = commands.Command.create_set_relative_destination_command(dx, dy)
+                command = commands.Command.create_set_relative_destination_command(
+                    dx, dy
+                )
         else:
             if report.status.name == "HALTED":
                 command = commands.Command.create_land_command()

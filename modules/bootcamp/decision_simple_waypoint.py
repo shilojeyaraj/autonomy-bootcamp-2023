@@ -55,9 +55,9 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
         # Calculate distance to waypoint
         dx = self.waypoint.x - report.position.x
         dy = self.waypoint.y - report.position.y
-        dist = (dx**2 + dy**2) ** 0.5
+        dist_squared = dx * dx + dy * dy
 
-        if dist > self.acceptance_radius:
+        if dist_squared > self.acceptance_radius * self.acceptance_radius:
             if report.status.name == "HALTED":
                 command = commands.Command.create_set_relative_destination_command(dx, dy)
         else:

@@ -82,9 +82,9 @@ class DecisionWaypointLandingPads(base_decision.BaseDecision):
         if self.phase == "to_wp":
             dx = self.waypoint.x - pos.x
             dy = self.waypoint.y - pos.y
-            dist = (dx * dx + dy * dy) ** 0.5
+            dist_squared = dx * dx + dy * dy
 
-            if dist <= self.acceptance_radius:
+            if dist_squared <= self.acceptance_radius * self.acceptance_radius:
                 # We're within radius of the waypoint:
                 # If moving, HALT first; if halted, switch to pad-seeking
                 if status == "HALTED":

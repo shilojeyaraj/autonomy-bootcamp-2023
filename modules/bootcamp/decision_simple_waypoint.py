@@ -23,7 +23,6 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
         # ============
         # ↓ BOOTCAMPERS MODIFY BELOW THIS COMMENT ↓
         # ============
-        self.has_landed = False
         # ============
         # ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑
         # ============
@@ -44,13 +43,7 @@ class DecisionSimpleWaypoint(base_decision.BaseDecision):
         # ============
         # ↓ BOOTCAMPERS MODIFY BELOW THIS COMMENT ↓
         # ============
-        if self.has_landed:
-            return command
-
         # Do something based on the report and the state of this class...
-        if report.status.name == "LANDED":
-            self.has_landed = True
-            return command
 
         # Calculate distance to waypoint
         dx = self.waypoint.x - report.position.x

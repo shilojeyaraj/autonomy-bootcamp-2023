@@ -46,7 +46,9 @@ class DetectLandingPad:
     __MODEL_NAME = "best-2n.pt"
 
     @classmethod
-    def create(cls, model_directory: pathlib.Path) -> "tuple[bool, DetectLandingPad | None]":
+    def create(
+        cls, model_directory: pathlib.Path
+    ) -> "tuple[bool, DetectLandingPad | None]":
         """
         model_directory: Directory to models.
         """
@@ -67,15 +69,21 @@ class DetectLandingPad:
 
         return True, DetectLandingPad(cls.__create_key, model)
 
-    def __init__(self, class_private_create_key: object, model: ultralytics.YOLO) -> None:
+    def __init__(
+        self, class_private_create_key: object, model: ultralytics.YOLO
+    ) -> None:
         """
         Private constructor, use create() method.
         """
-        assert class_private_create_key is DetectLandingPad.__create_key, "Use create() method"
+        assert (
+            class_private_create_key is DetectLandingPad.__create_key
+        ), "Use create() method"
 
         self.__model = model
 
-    def run(self, image: np.ndarray) -> "tuple[list[bounding_box.BoundingBox], np.ndarray]":
+    def run(
+        self, image: np.ndarray
+    ) -> "tuple[list[bounding_box.BoundingBox], np.ndarray]":
         """
         Converts an image into a list of bounding boxes.
 
@@ -98,8 +106,7 @@ class DetectLandingPad:
         # * verbose
         results = self.__model.predict(
             source=image,
-            conf=0.25,  # keep default; lower only if needed
-            iou=0.5,
+            conf=0.5,  # keep default; lower only if needed
             device=self.__DEVICE,  # use class device (GPU if available else CPU)
             verbose=False,
         )
@@ -123,18 +130,15 @@ class DetectLandingPad:
 
         # Build BoundingBox objects EXACTLY like tests do
         bounding_boxes: list[bounding_box.BoundingBox] = []
-        for x1, y1, x2, y2 in xyxy:
-            ok, bb = bounding_box.BoundingBox.create(
-                np.array([float(x1), float(y1), float(x2), float(y2)], dtype=float)
-            )
+        for coords in xyxy:
+            ok, bb = bounding_box.BoundingBox.create(np.array(coords, dtype=float))
             if ok and bb is not None:
                 bounding_boxes.append(bb)
 
         # Make ordering deterministic to match test expectations
-        bounding_boxes.sort(key=lambda b: b.x1, reverse=True)
 
         return bounding_boxes, image_annotated
 
         # ============
         # ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑
-        # ============
+        # ============mmit 

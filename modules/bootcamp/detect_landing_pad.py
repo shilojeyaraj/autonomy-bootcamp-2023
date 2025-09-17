@@ -98,7 +98,7 @@ class DetectLandingPad:
         # * verbose
         results = self.__model.predict(
             source=image,
-            conf=0.5,  # keep default; lower only if needed
+            conf=0.7,  # keep default; lower only if needed
             device=self.__DEVICE,  # use class device (GPU if available else CPU)
             verbose=False,
         )
@@ -123,7 +123,7 @@ class DetectLandingPad:
         # Build BoundingBox objects EXACTLY like tests do
         bounding_boxes: list[bounding_box.BoundingBox] = []
         for coords in xyxy:
-            ok, bb = bounding_box.BoundingBox.create(np.array(coords, dtype=float))
+            ok, bb = bounding_box.BoundingBox.create(coords)
             if ok and bb is not None:
                 bounding_boxes.append(bb)
 
